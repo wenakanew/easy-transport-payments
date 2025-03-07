@@ -20,11 +20,23 @@ export const processMpesaPayment = async (
   console.log(`Processing payment of KSh ${amount} to ${formattedPhone} with API key ${API_KEY}`);
   
   try {
+    // Ensure the phone number is properly formatted according to API requirements
+    // The API expects the format 07XXXXXXXX (without the country code)
+    let formattedPhoneForApi = formattedPhone;
+    
+    // If it starts with 254, remove it and add 0
+    if (formattedPhone.startsWith('254')) {
+      formattedPhoneForApi = `0${formattedPhone.slice(3)}`;
+    }
+    
+    console.log(`Sending STK push to formatted phone: ${formattedPhoneForApi}`);
+    
+    // Make sure we're sending the exact format expected by the API
     const resp = await axios.post(
       "https://lipia-api.kreativelabske.com/api/request/stk",
       {
-        phone: `0${formattedPhone.slice(3)}`, // Format phone to 07XXXXXXXX format
-        amount: String(amount),
+        phone: formattedPhoneForApi,
+        amount: String(amount)
       },
       {
         headers: {
@@ -109,4 +121,34 @@ export const verifyPayment = async (
       });
     }, 1000);
   });
+};
+
+/**
+ * Handle QR code scanning to trigger STK push
+ * This would be called from an endpoint that the QR code links to
+ */
+export const handleQrCodeScan = async (
+  paymentData: { amount: number; reference: string }
+): Promise<{success: boolean, message: string}> => {
+  try {
+    // In a real implementation, this function would be part of a web service
+    // that the QR code URL points to. For now, we'll simulate this behavior.
+    
+    // We'd need the phone number from the user scanning the QR
+    // For demo purposes, let's use a test phone number
+    const testPhone = "0712345678";
+    
+    const result = await processMpesaPayment(testPhone, paymentData.amount);
+    
+    return {
+      success: result.success,
+      message: result.message || "QR code scan processed"
+    };
+  } catch (error: any) {
+    console.error('Error handling QR code scan:', error);
+    return {
+      success: false,
+      message: error.message || 'An error occurred while handling QR code scan'
+    };
+  }
 };

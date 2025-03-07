@@ -18,11 +18,12 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   onManualPayment
 }) => {
   const [qrValue, setQrValue] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
   
   useEffect(() => {
-    // Create a direct payment URL that will trigger the M-Pesa STK push
-    // When scanned, this will open a web page that processes the payment
+    // Create a more direct payload that can be used to trigger the payment
+    // This would typically be processed by a web service when scanned
     const paymentData = {
       action: "pay",
       amount: amount,
@@ -30,9 +31,10 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
       reference: `TRANSIT-${Date.now()}`
     };
     
-    // The QR code will contain a URL that opens a small webapp that triggers the STK push
-    // In a production app, this would be a hosted URL that processes payments
-    const paymentUrl = `https://easyTransitPay.app/pay?data=${encodeURIComponent(JSON.stringify(paymentData))}`;
+    // In a real implementation, this URL would point to a web application
+    // that handles QR code payments. For demo purposes, we'll just encode
+    // all the payment data in the QR code directly.
+    const paymentUrl = `mpesa://pay?data=${encodeURIComponent(JSON.stringify(paymentData))}`;
     
     // Set the QR code value to the payment URL
     setQrValue(paymentUrl);
@@ -51,22 +53,46 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   const handleTestPayment = async () => {
     // This is just for testing - in a real app the passenger would scan the QR
     try {
+      setIsLoading(true);
       toast({
         title: "Testing Payment",
-        description: "Simulating QR code scan...",
+        description: "Sending M-Pesa STK push...",
       });
       
-      // Use a test phone number
-      await processMpesaPayment("0712345678", amount);
+      // Use a test phone number - make sure it's a valid Kenyan number
+      // For demo purposes, ask for a phone number input
+      const phoneInput = prompt("Enter a phone number to test (format: 07XXXXXXXX):", "0712345678");
       
-      toast({
-        title: "STK Push Sent",
-        description: "Payment prompt has been sent to the test phone",
-      });
-    } catch (error) {
+      if (!phoneInput) {
+        setIsLoading(false);
+        toast({
+          title: "Cancelled",
+          description: "Payment test was cancelled",
+        });
+        return;
+      }
+      
+      const result = await processMpesaPayment(phoneInput, amount);
+      
+      setIsLoading(false);
+      
+      if (result.success) {
+        toast({
+          title: "STK Push Sent",
+          description: "Payment prompt has been sent to the phone. Check your phone for the M-Pesa PIN prompt.",
+        });
+      } else {
+        toast({
+          title: "Payment Failed",
+          description: result.message || "Could not process test payment",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      setIsLoading(false);
       toast({
         title: "Payment Failed",
-        description: "Could not process test payment",
+        description: error.message || "Could not process test payment",
         variant: "destructive",
       });
     }
@@ -82,7 +108,8 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         
         <div className="text-center mb-2">
           <p className="text-lg font-medium">Amount: <span className="text-transport font-semibold">KSh {amount.toFixed(2)}</span></p>
-          <p className="text-sm text-muted-foreground">Ask passenger to scan this QR code</p>
+          <p className="text-sm text-muted-foreground">Ask passenger to scan this QR code with any QR scanner app</p>
+          <p className="text-xs text-muted-foreground mt-1">After scanning, they will receive an M-Pesa prompt</p>
         </div>
         
         <div className="bg-white p-4 rounded-lg shadow-lg border border-border w-64 h-64 flex items-center justify-center">
@@ -106,15 +133,17 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
             variant="outline" 
             className="w-full flex items-center justify-center space-x-2 h-12 border-transport text-transport hover:bg-transport hover:text-white"
             onClick={handleTestPayment}
+            disabled={isLoading}
           >
             <Smartphone className="h-5 w-5" />
-            <span>Test Payment</span>
+            <span>{isLoading ? "Processing..." : "Test Payment"}</span>
           </Button>
           
           <Button 
             variant="outline" 
             className="w-full flex items-center justify-center space-x-2 h-12 border-transport text-transport hover:bg-transport hover:text-white"
             onClick={onManualPayment}
+            disabled={isLoading}
           >
             <Smartphone className="h-5 w-5" />
             <span>Manual Payment</span>
@@ -124,6 +153,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
             variant="outline" 
             className="w-full flex items-center justify-center space-x-2 h-12"
             onClick={onBack}
+            disabled={isLoading}
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
