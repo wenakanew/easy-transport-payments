@@ -13,7 +13,7 @@ const API_KEY = '1df1102d8dae2d6d975f1d835d302d7ac752393f';
 export const processMpesaPayment = async (
   phoneNumber: string,
   amount: number
-): Promise<void> => {
+): Promise<{success: boolean, data?: any, message?: string}> => {
   // Format phone number to include country code if needed
   const formattedPhone = formatPhoneNumber(phoneNumber);
   
@@ -35,14 +35,35 @@ export const processMpesaPayment = async (
     
     console.log('STK push response:', resp.data);
     
-    if (!resp.data.success) {
-      throw new Error(resp.data.message || 'Failed to process payment');
+    // The API returns success: false but message: "callback received successfully" when it works
+    // This is a bit confusing but we need to handle it
+    if (resp.data.message === "callback received successfully") {
+      return {
+        success: true,
+        data: resp.data.data,
+        message: "STK push sent successfully"
+      };
     }
     
-    return Promise.resolve();
-  } catch (error) {
+    // If not the special case above, check the actual success field
+    if (!resp.data.success) {
+      return {
+        success: false,
+        message: resp.data.message || 'Failed to process payment'
+      };
+    }
+    
+    return {
+      success: true,
+      data: resp.data.data,
+      message: "Payment processed successfully"
+    };
+  } catch (error: any) {
     console.error('Error processing payment:', error);
-    throw error;
+    return {
+      success: false,
+      message: error.message || 'An error occurred while processing payment'
+    };
   }
 };
 

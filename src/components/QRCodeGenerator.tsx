@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QrCode, Smartphone, ArrowLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { processMpesaPayment } from '@/lib/mpesaApi';
 
 interface QRCodeGeneratorProps {
   amount: number;
@@ -20,20 +21,23 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   const { toast } = useToast();
   
   useEffect(() => {
-    // In a real app, this would call an API to create a payment request and get a QR code
-    // For demo purposes, we're creating a mock payload
+    // Create a direct payment URL that will trigger the M-Pesa STK push
+    // When scanned, this will open a web page that processes the payment
     const paymentData = {
+      action: "pay",
       amount: amount,
-      currency: 'KES',
-      merchantId: 'EasyTransitPay',
-      timestamp: new Date().toISOString(),
-      apiKey: '1df1102d8dae2d6d975f1d835d302d7ac752393f'
+      timestamp: Date.now(),
+      reference: `TRANSIT-${Date.now()}`
     };
     
-    // Create a QR code that contains the payment information
-    setQrValue(JSON.stringify(paymentData));
+    // The QR code will contain a URL that opens a small webapp that triggers the STK push
+    // In a production app, this would be a hosted URL that processes payments
+    const paymentUrl = `https://easyTransitPay.app/pay?data=${encodeURIComponent(JSON.stringify(paymentData))}`;
     
-    // Simulate QR code generation
+    // Set the QR code value to the payment URL
+    setQrValue(paymentUrl);
+    
+    // Notify the conductor that the QR is ready
     const timer = setTimeout(() => {
       toast({
         title: "QR Code Ready",
@@ -43,6 +47,30 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
     
     return () => clearTimeout(timer);
   }, [amount, toast]);
+  
+  const handleTestPayment = async () => {
+    // This is just for testing - in a real app the passenger would scan the QR
+    try {
+      toast({
+        title: "Testing Payment",
+        description: "Simulating QR code scan...",
+      });
+      
+      // Use a test phone number
+      await processMpesaPayment("0712345678", amount);
+      
+      toast({
+        title: "STK Push Sent",
+        description: "Payment prompt has been sent to the test phone",
+      });
+    } catch (error) {
+      toast({
+        title: "Payment Failed",
+        description: "Could not process test payment",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <Card className="w-full max-w-md mx-auto p-6 glass-morphism animate-scale-in">
@@ -74,6 +102,15 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         </div>
         
         <div className="w-full space-y-3 mt-4">
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-center space-x-2 h-12 border-transport text-transport hover:bg-transport hover:text-white"
+            onClick={handleTestPayment}
+          >
+            <Smartphone className="h-5 w-5" />
+            <span>Test Payment</span>
+          </Button>
+          
           <Button 
             variant="outline" 
             className="w-full flex items-center justify-center space-x-2 h-12 border-transport text-transport hover:bg-transport hover:text-white"
