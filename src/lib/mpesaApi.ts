@@ -1,5 +1,6 @@
 
 // M-Pesa API integration
+import axios from 'axios';
 
 const API_KEY = '1df1102d8dae2d6d975f1d835d302d7ac752393f';
 
@@ -13,20 +14,36 @@ export const processMpesaPayment = async (
   phoneNumber: string,
   amount: number
 ): Promise<void> => {
-  // In a real implementation, this would make an API call to the M-Pesa API
-  // For now, we'll simulate the API call with a delay
-  
   // Format phone number to include country code if needed
   const formattedPhone = formatPhoneNumber(phoneNumber);
   
   console.log(`Processing payment of KSh ${amount} to ${formattedPhone} with API key ${API_KEY}`);
   
-  // Simulate API call delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, 1500);
-  });
+  try {
+    const resp = await axios.post(
+      "https://lipia-api.kreativelabske.com/api/request/stk",
+      {
+        phone: `0${formattedPhone.slice(3)}`, // Format phone to 07XXXXXXXX format
+        amount: String(amount),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    
+    console.log('STK push response:', resp.data);
+    
+    if (!resp.data.success) {
+      throw new Error(resp.data.message || 'Failed to process payment');
+    }
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    throw error;
+  }
 };
 
 /**
