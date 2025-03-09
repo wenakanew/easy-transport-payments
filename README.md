@@ -1,48 +1,65 @@
+# Easy Transport Payments
 
-**Use your preferred IDE**
+Easy Transport Payments is a streamlined solution for managing transport payments efficiently and effectively using modern web technologies.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Technologies Used
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Vite**: Fast and opinionated build tool.
+- **TypeScript**: Strongly typed programming language that builds on JavaScript.
+- **React**: Library for building user interfaces.
+- **shadcn-ui**: UI component library.
+- **Tailwind CSS**: Utility-first CSS framework.
 
-Follow these steps:
+## Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Node.js & npm**: Ensure you have Node.js and npm installed. You can install them using [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Local Development
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+1. **Clone the Repository**:
+    ```sh
+    git clone https://github.com/wenakanew/easy-transport-payments.git
+    ```
 
-**Edit a file directly in GitHub**
+2. **Navigate to the Project Directory**:
+    ```sh
+    cd easy-transport-payments
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. **Install Dependencies**:
+    ```sh
+    npm install
+    ```
 
-**Use GitHub Codespaces**
+4. **Start the Development Server**:
+    ```sh
+    npm run dev
+    ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Editing Files Directly on GitHub
 
-## What technologies are used for this project?
+1. Navigate to the desired file(s) in the repository.
+2. Click the "Edit" button (pencil icon) at the top right of the file view.
+3. Make your changes and commit them.
 
-This project is built with .
+### Using GitHub Codespaces
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Navigate to the main page of the repository.
+2. Click the "Code" button (green button) near the top right.
+3. Select the "Codespaces" tab.
+4. Click on "New codespace" to launch a new Codespace environment.
+5. Edit files directly within the Codespace, then commit and push your changes.
 
+## Contributing
 
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+Feel free to customize further based on your specific project needs.
